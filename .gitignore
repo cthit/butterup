@@ -1,0 +1,6 @@
+# cargo-stuff
+/target
+
+# ssh public-keys
+*.key
+*id_rsa*

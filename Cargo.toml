@@ -1,0 +1,15 @@
+[package]
+name = "butterup"
+description = "Backup btrfs snapshots over SSH"
+version = "0.1.0"
+authors = ["Joakim Hulthe <joakim@hulthe.net>"]
+license = "MPL-2.0"
+edition = "2018"
+
+[dependencies]
+anyhow = "1.0.44"
+chrono = "0.4.19"
+clap = "3.0.0-beta.4"
+log = "0.4"
+pretty_env_logger = "0.4"
+ssh2 = "0.9.1"
