@@ -6,6 +6,7 @@ mod local;
 mod planner;
 mod remote;
 mod snapshot;
+mod util;
 
 use actions::{list, show_plan, sync};
 use chrono::{DateTime, FixedOffset};

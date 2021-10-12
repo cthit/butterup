@@ -1,10 +1,12 @@
 use crate::local;
 use crate::planner::{self, TransferKind};
 use crate::remote;
+use crate::util::format_duration;
 use crate::Opt;
 use ssh2::Session;
 use std::io::{self, Read};
 use std::process::{Command, Stdio};
+use std::time::Instant;
 
 pub fn run(opt: &Opt, sync_all: bool) -> anyhow::Result<()> {
     // TODO: currently we only sync the latest local files
@@ -50,7 +52,11 @@ fn send_snapshot(
     snapshot: &str,
     parent: Option<&str>,
 ) -> anyhow::Result<()> {
-    info!("[{}] transmitting delta", snapshot);
+    if parent.is_none() {
+        info!("[{}] sending full snapshot data", snapshot);
+    } else {
+        info!("[{}] sending snapshot delta", snapshot);
+    }
 
     // spawn btrfs send
     let mut send = Command::new("btrfs")
@@ -79,8 +85,8 @@ fn send_snapshot(
     receive.exec(&format!(r#"btrfs receive "{}""#, remote_path,))?;
 
     // pipe send to receive
+    let start_time = Instant::now();
     let num_bytes = io::copy(&mut send_stdout, &mut receive)?;
-    info!("[{}] sent {} bytes", snapshot, num_bytes);
 
     // wait for send to complete
     let local_out = send.wait_with_output()?;
@@ -99,6 +105,14 @@ fn send_snapshot(
     if status != 0 {
         anyhow::bail!("btrfs receive failed\nstderr:\n{}", remote_err);
     }
+
+    let time_elapsed = start_time.elapsed();
+    info!(
+        "[{}] sent {} bytes in {}",
+        snapshot,
+        num_bytes,
+        format_duration(time_elapsed)
+    );
 
     Ok(())
 }
