@@ -12,4 +12,7 @@ chrono = "0.4.19"
 clap = "3.0.0-beta.4"
 log = "0.4"
 pretty_env_logger = "0.4"
-ssh2 = "0.9.1"
+
+[dependencies.ssh2]
+version = "0.9.1"
+features = ["vendored-openssl"]
