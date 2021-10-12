@@ -59,7 +59,7 @@ fn send_snapshot(
         .arg(snapshot)
         .current_dir(&opt.path)
         .stdin(Stdio::null())
-        .stderr(Stdio::null())
+        .stderr(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()?;
 
@@ -87,7 +87,7 @@ fn send_snapshot(
     if !local_out.status.success() {
         let stderr = std::str::from_utf8(&local_out.stderr)
             .unwrap_or("failed to parse stderr, not valid utf8");
-        anyhow::bail!("btrfs send failed\nstderr:\n{}", stderr);
+        anyhow::bail!("btrfs send failed:\n{}", stderr);
     }
 
     // wait for receive to complete
