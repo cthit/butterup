@@ -10,7 +10,7 @@ mod util;
 
 use actions::{list, show_plan, sync};
 use chrono::{DateTime, FixedOffset};
-use clap::{AppSettings, Clap};
+use clap::{crate_version, AppSettings, Clap};
 use remote::Remote;
 use std::collections::BTreeMap;
 use std::path::PathBuf;
@@ -20,7 +20,7 @@ pub type FileList = BTreeMap<TimeStamp, String>;
 
 /// Backup btrfs snapshots over SSH
 #[derive(Clap)]
-#[clap(setting = AppSettings::ColoredHelp)]
+#[clap(version = crate_version!(), setting = AppSettings::ColoredHelp)]
 pub struct Opt {
     /// The path of the backup directory on the local filesystem
     #[clap(short = 'l', long)]
