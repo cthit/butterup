@@ -11,7 +11,7 @@ pub fn run(opt: &Opt) -> anyhow::Result<()> {
     let presence = planner::presence(&local_list, &remote_list);
 
     println!(
-        "found {} out of {} folders that need backup",
+        "found that {} out of {} folders need backup",
         plan.transfers.len(),
         presence.len(),
     );
@@ -19,7 +19,7 @@ pub fn run(opt: &Opt) -> anyhow::Result<()> {
     if !plan.transfers.is_empty() {
         println!("plan:");
         for (item, item_plan) in plan.transfers {
-            println!("- {}: {:?}", item, item_plan);
+            println!("- {:?}: {:?}", item, item_plan);
         }
     }
 

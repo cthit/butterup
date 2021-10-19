@@ -1,3 +1,4 @@
+use std::path::Path;
 use std::time::Duration;
 
 pub fn format_duration(d: Duration) -> String {
@@ -11,4 +12,9 @@ pub fn format_duration(d: Duration) -> String {
         (_, 0) => format!("{}h {:.2}s", hours, seconds),
         (_, _) => format!("{}h {}m {:.2}s", hours, minutes, seconds),
     }
+}
+
+pub fn path_as_utf8(path: &Path) -> anyhow::Result<&str> {
+    path.to_str()
+        .ok_or_else(|| anyhow::format_err!("path not utf-8"))
 }

@@ -15,14 +15,15 @@ pub struct Remote {
 }
 
 pub fn connect(opt: &Opt) -> anyhow::Result<Session> {
-    let stream = TcpStream::connect(&opt.remote.remote)?;
-    let mut session = Session::new()?;
-    session.set_tcp_stream(stream);
-    session.handshake()?;
     info!(
         r#"connecting to {}@{}"#,
         opt.remote.username, opt.remote.remote,
     );
+
+    let stream = TcpStream::connect(&opt.remote.remote)?;
+    let mut session = Session::new()?;
+    session.set_tcp_stream(stream);
+    session.handshake()?;
     session.userauth_pubkey_file(
         &opt.remote.username,
         None,
@@ -32,6 +33,7 @@ pub fn connect(opt: &Opt) -> anyhow::Result<Session> {
     if !session.authenticated() {
         anyhow::bail!("ssh not authenticated");
     }
+    session.set_allow_sigpipe(true);
 
     Ok(session)
 }
