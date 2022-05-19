@@ -16,7 +16,7 @@ pub fn file_list(opt: &Opt) -> anyhow::Result<FileList> {
 
         let name = match entry.file_name().into_string() {
             Ok(name) => name,
-            Err(_) => continue,
+            Err(_) => continue, // ignore names that aren't valid utf-8
         };
 
         let date = DateTime::parse_from_rfc3339(&name)?;

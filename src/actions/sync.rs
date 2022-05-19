@@ -12,20 +12,13 @@ use std::time::Instant;
 
 const TMP_FOLDER: &str = ".tmp";
 
-pub fn run(opt: &Opt, sync_all: bool) -> anyhow::Result<()> {
-    // TODO: currently we only sync the latest local files
-    // --all will force a sync of ALL files on local which does not exist on remote
-    if sync_all {
-        error!("backup --all is not yet implemented");
-        unimplemented!();
-    }
-
+pub fn run(opt: &Opt, include_all: bool) -> anyhow::Result<()> {
     info!("generating backup plan");
     let local_list = local::file_list(opt)?;
     let session = remote::connect(opt)?;
     let remote_list = remote::file_list(opt, &session)?;
 
-    let plan = planner::plan(&local_list, &remote_list);
+    let plan = planner::plan(&local_list, &remote_list, include_all);
 
     if plan.transfers.is_empty() {
         info!("nothing to do");
@@ -144,14 +137,14 @@ fn send_snapshot(
         .ok_or_else(|| anyhow::format_err!("failed to take stdout"))?;
 
     // #### UPLOAD SNAPSHOT FILE ####
-    const CHUNK_SIZE: usize = 1024 * 1024 * 100; // 100MB
+    const CHUNK_SIZE: usize = 1024 * 1024 * 100; // 100MiB
 
     let (data_tx, data_rx) = mpsc::sync_channel(10);
     let tmp_path = opt.remote.path.join(TMP_FOLDER);
 
-    // spawn a thread to stream data from btrfs send in chunks
+    // spawn a thread to stream data from `btrfs send` in chunks
     thread::spawn(move || -> io::Result<()> {
-        'outer: for _ in 0.. {
+        'outer: for _chunk in 0.. {
             let mut buf: Vec<u8> = vec![0u8; CHUNK_SIZE];
             let mut len = 0;
             loop {

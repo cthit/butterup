@@ -5,12 +5,11 @@ mod actions;
 mod local;
 mod planner;
 mod remote;
-mod snapshot;
 mod util;
 
 use actions::{list, show_plan, sync};
 use chrono::{DateTime, FixedOffset};
-use clap::{crate_version, AppSettings, Clap};
+use clap::{crate_version, Parser};
 use remote::Remote;
 use std::collections::BTreeMap;
 use std::path::PathBuf;
@@ -19,8 +18,8 @@ pub type TimeStamp = DateTime<FixedOffset>;
 pub type FileList = BTreeMap<TimeStamp, String>;
 
 /// Backup btrfs snapshots over SSH
-#[derive(Clap)]
-#[clap(version = crate_version!(), setting = AppSettings::ColoredHelp)]
+#[derive(Parser)]
+#[clap(version = crate_version!())]
 pub struct Opt {
     /// The path of the backup directory on the local filesystem
     #[clap(short = 'l', long)]
@@ -42,16 +41,21 @@ pub struct Opt {
     action: Action,
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 pub enum Action {
     /// Perform a backup
     Backup {
+        /// Backup all files, not just the most recent ones
         #[clap(long)]
         all: bool,
     },
 
     /// Generate and show a backup plan
-    ShowPlan,
+    ShowPlan {
+        /// Backup all files, not just the most recent ones
+        #[clap(long)]
+        all: bool,
+    },
 
     /// List all backups, and where they reside
     List,
@@ -64,7 +68,7 @@ fn main() -> anyhow::Result<()> {
 
     match opt.action {
         Action::Backup { all } => sync::run(&opt, all)?,
-        Action::ShowPlan => show_plan::run(&opt)?,
+        Action::ShowPlan { all } => show_plan::run(&opt, all)?,
         Action::List => list::run(&opt)?,
     }
 

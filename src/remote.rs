@@ -41,7 +41,7 @@ pub fn connect(opt: &Opt) -> anyhow::Result<Session> {
 pub fn file_list(opt: &Opt, session: &Session) -> anyhow::Result<FileList> {
     let mut channel = session.channel_session()?;
     channel.exec(&format!(
-        r#"ls -1N "{}""#,
+        r#"ls -1NU "{}""#,
         opt.remote
             .path
             .to_str()
@@ -53,7 +53,6 @@ pub fn file_list(opt: &Opt, session: &Session) -> anyhow::Result<FileList> {
     let mut list = BTreeMap::new();
     for file in output.lines() {
         let date = DateTime::parse_from_rfc3339(file)?;
-        //let path = PathBuf::from(file);
         list.insert(date, file.to_string());
     }
 
