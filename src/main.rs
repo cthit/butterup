@@ -10,6 +10,7 @@ mod util;
 use actions::{list, show_plan, sync};
 use chrono::{DateTime, FixedOffset};
 use clap::{crate_version, Parser};
+use log::LevelFilter;
 use remote::Remote;
 use std::collections::BTreeMap;
 use std::path::PathBuf;
@@ -21,6 +22,14 @@ pub type FileList = BTreeMap<TimeStamp, String>;
 #[derive(Parser)]
 #[clap(version = crate_version!())]
 pub struct Opt {
+    /// Log more stuff
+    #[clap(long, short, parse(from_occurrences))]
+    verbose: u8,
+
+    /// Do not output anything but errors.
+    #[clap(long, short)]
+    quiet: bool,
+
     /// The path of the backup directory on the local filesystem
     #[clap(short = 'l', long)]
     path: PathBuf,
@@ -64,7 +73,16 @@ pub enum Action {
 fn main() -> anyhow::Result<()> {
     let opt = Opt::parse();
 
-    pretty_env_logger::init();
+    let log_level = match opt.verbose {
+        0 if opt.quiet => LevelFilter::Error,
+        0 => LevelFilter::Info,
+        1 => LevelFilter::Debug,
+        2.. => LevelFilter::Trace,
+    };
+
+    pretty_env_logger::formatted_builder()
+        .filter(None, log_level)
+        .init();
 
     match opt.action {
         Action::Backup { all } => sync::run(&opt, all)?,
